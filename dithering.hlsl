@@ -1,0 +1,25 @@
+Texture2D src : register(t0);
+cbuffer constant0 : register(b0) {
+    float fade_percentage;
+}
+
+static const float4x4 BayerMatrix = {
+    { 0.0 / 16.0,  8.0 / 16.0,  2.0 / 16.0, 10.0 / 16.0 },
+    {12.0 / 16.0,  4.0 / 16.0, 14.0 / 16.0,  6.0 / 16.0 },
+    { 3.0 / 16.0, 11.0 / 16.0,  1.0 / 16.0,  9.0 / 16.0 },
+    {15.0 / 16.0,  7.0 / 16.0, 13.0 / 16.0,  5.0 / 16.0 }
+};
+
+float4 dithering(float4 pos : SV_Position) : SV_TARGET
+{
+    // ピクセル座標を取得（整数）
+    uint2 pixelCoord = uint2(pos.xy) % 4;
+
+    // ベイヤー値を取得
+    float threshold = BayerMatrix[pixelCoord.y][pixelCoord.x];
+
+    // ディザリング判定
+    float4 col = (fade_percentage > threshold*100.0) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
+
+    return col;
+}
