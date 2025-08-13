@@ -1,5 +1,5 @@
 @dithering
---label:自作
+--label:加工
 --track@fade_percentage:透明度,0,100,0,0.1
 --track@fineness:細かさ,0,100,100,1
 --[[pixelshader@dithering:
@@ -18,16 +18,10 @@ static const float4x4 BayerMatrix = {
 
 float4 dithering(float4 pos : SV_Position) : SV_TARGET
 {
-    // ピクセル座標を取得（整数）
     uint2 pixelCoord = uint2(pos.xy*fineness*0.01) % 4;
-
-    // ベイヤー値を取得
     float threshold = BayerMatrix[pixelCoord.y][pixelCoord.x];
-
     // ディザリング判定
-    float4 col = (fade_percentage*0.01 > threshold) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
-
-    return col;
+    return (fade_percentage*0.01 > threshold) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
 }
 
 ]]
@@ -35,13 +29,16 @@ float4 dithering(float4 pos : SV_Position) : SV_TARGET
 obj.pixelshader("dithering", "object", {"object"}, {fade_percentage, fineness}, "copy")
 
 @dithering_z
---label:自作
---track@fade_percentage:透明度,0,100,0,0.1
+--label:加工
+--track@start_z:開始Z座標,-1024,100000,-512,1
+--track@end_z:終了Z座標,-1024,100000,-1024,1
 --track@fineness:細かさ,0,100,100,1
 --[[pixelshader@dithering_z:
 Texture2D src : register(t0);
 cbuffer constant0 : register(b0) {
-    float fade_percentage;
+    float start_z;
+    float end_z;
+    float obj_z;
     float fineness;
 }
 
@@ -52,26 +49,21 @@ static const float4x4 BayerMatrix = {
     {15.0 / 16.0,  7.0 / 16.0, 13.0 / 16.0,  5.0 / 16.0 }
 };
 
-float4 dithering(float4 pos : SV_Position) : SV_TARGET
+float4 dithering_z(float4 pos : SV_Position) : SV_TARGET
 {
-    // ピクセル座標を取得（整数）
     uint2 pixelCoord = uint2(pos.xy*fineness*0.01) % 4;
-
-    // ベイヤー値を取得
     float threshold = BayerMatrix[pixelCoord.y][pixelCoord.x];
-
+    float fade_percentage = (obj_z - start_z) / (end_z - start_z);
     // ディザリング判定
-    float4 col = (fade_percentage*0.01 > threshold) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
-
-    return col;
+    return (fade_percentage > threshold) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
 }
 
 ]]
 
-obj.pixelshader("dithering_z", "object", {"object"}, {fade_percentage, fineness}, "copy")
+obj.pixelshader("dithering_z", "object", {"object"}, {start_z, end_z, obj.z, fineness}, "copy")
 
 @dithering_camera
---label:自作
+--label:加工
 --track@fade_percentage:透明度,0,100,0,0.1
 --track@fineness:細かさ,0,100,100,1
 --[[pixelshader@dithering_camera:
@@ -88,18 +80,11 @@ static const float4x4 BayerMatrix = {
     {15.0 / 16.0,  7.0 / 16.0, 13.0 / 16.0,  5.0 / 16.0 }
 };
 
-float4 dithering(float4 pos : SV_Position) : SV_TARGET
+float4 dithering_camera(float4 pos : SV_Position) : SV_TARGET
 {
-    // ピクセル座標を取得（整数）
-    uint2 pixelCoord = uint2(pos.xy*fineness*0.01) % 4;
-
-    // ベイヤー値を取得
-    float threshold = BayerMatrix[pixelCoord.y][pixelCoord.x];
-
-    // ディザリング判定
-    float4 col = (fade_percentage*0.01 > threshold) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
-
-    return col;
+    // 未実装
+    discard;
+    return float4(0, 0, 0, 0);
 }
 
 ]]

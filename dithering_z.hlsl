@@ -1,6 +1,8 @@
 Texture2D src : register(t0);
 cbuffer constant0 : register(b0) {
-    float fade_percentage;
+    float start_z;
+    float end_z;
+    float obj_z;
     float fineness;
 }
 
@@ -11,16 +13,11 @@ static const float4x4 BayerMatrix = {
     {15.0 / 16.0,  7.0 / 16.0, 13.0 / 16.0,  5.0 / 16.0 }
 };
 
-float4 dithering(float4 pos : SV_Position) : SV_TARGET
+float4 dithering_z(float4 pos : SV_Position) : SV_TARGET
 {
-    // ピクセル座標を取得（整数）
     uint2 pixelCoord = uint2(pos.xy*fineness*0.01) % 4;
-
-    // ベイヤー値を取得
     float threshold = BayerMatrix[pixelCoord.y][pixelCoord.x];
-
+    float fade_percentage = (obj_z - start_z) / (end_z - start_z);
     // ディザリング判定
-    float4 col = (fade_percentage*0.01 > threshold) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
-
-    return col;
+    return (fade_percentage > threshold) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
 }

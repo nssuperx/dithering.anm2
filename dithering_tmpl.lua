@@ -1,5 +1,5 @@
 @dithering
---label:自作
+--label:加工
 --track@fade_percentage:透明度,0,100,0,0.1
 --track@fineness:細かさ,0,100,100,1
 --[[pixelshader@dithering:
@@ -9,17 +9,18 @@
 obj.pixelshader("dithering", "object", {"object"}, {fade_percentage, fineness}, "copy")
 
 @dithering_z
---label:自作
---track@fade_percentage:透明度,0,100,0,0.1
+--label:加工
+--track@start_z:開始Z座標,-1024,100000,-512,1
+--track@end_z:終了Z座標,-1024,100000,-1024,1
 --track@fineness:細かさ,0,100,100,1
 --[[pixelshader@dithering_z:
 {{.DitheringZ}}
 ]]
 
-obj.pixelshader("dithering_z", "object", {"object"}, {fade_percentage, fineness}, "copy")
+obj.pixelshader("dithering_z", "object", {"object"}, {start_z, end_z, obj.z, fineness}, "copy")
 
 @dithering_camera
---label:自作
+--label:加工
 --track@fade_percentage:透明度,0,100,0,0.1
 --track@fineness:細かさ,0,100,100,1
 --[[pixelshader@dithering_camera:

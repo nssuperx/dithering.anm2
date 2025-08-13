@@ -13,14 +13,8 @@ static const float4x4 BayerMatrix = {
 
 float4 dithering(float4 pos : SV_Position) : SV_TARGET
 {
-    // ピクセル座標を取得（整数）
     uint2 pixelCoord = uint2(pos.xy*fineness*0.01) % 4;
-
-    // ベイヤー値を取得
     float threshold = BayerMatrix[pixelCoord.y][pixelCoord.x];
-
     // ディザリング判定
-    float4 col = (fade_percentage*0.01 > threshold) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
-
-    return col;
+    return (fade_percentage*0.01 > threshold) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
 }
