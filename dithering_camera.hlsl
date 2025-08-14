@@ -1,6 +1,13 @@
 Texture2D src : register(t0);
 cbuffer constant0 : register(b0) {
-    float fade_percentage;
+    float start_z;
+    float end_z;
+    float obj_x;
+    float obj_y;
+    float obj_z;
+    float cam_x;
+    float cam_y;
+    float cam_z;
     float fineness;
 }
 
@@ -13,7 +20,10 @@ static const float4x4 BayerMatrix = {
 
 float4 dithering_camera(float4 pos : SV_Position) : SV_TARGET
 {
-    // 未実装
-    discard;
-    return float4(0, 0, 0, 0);
+    float3 camPos = float3(cam_x, cam_y, cam_z);
+    float3 objPos = float3(obj_x, obj_y, obj_z);
+    uint2 pixelCoord = uint2(pos.xy*fineness*0.01) % 4;
+    float threshold = BayerMatrix[pixelCoord.y][pixelCoord.x];
+    float fade = distance(camPos, objPos) / (end_z - start_z);
+    return (fade > threshold) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
 }
