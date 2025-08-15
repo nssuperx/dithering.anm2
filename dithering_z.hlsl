@@ -17,7 +17,7 @@ float4 dithering_z(float4 pos : SV_Position) : SV_TARGET
 {
     uint2 pixelCoord = uint2(pos.xy*fineness*0.01) % 4;
     float threshold = BayerMatrix[pixelCoord.y][pixelCoord.x];
-    float fade_percentage = (obj_z - start_z) / (end_z - start_z);
+    float fade = (obj_z - start_z) / (end_z - start_z);
     // ディザリング判定
-    return (fade_percentage > threshold) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
+    return (fade > threshold) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
 }

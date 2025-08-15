@@ -30,6 +30,7 @@ obj.pixelshader("dithering", "object", {"object"}, {fade_percentage, fineness}, 
 
 @dithering_z
 --label:加工
+--check@is_offscrean:オフスクリーン描画,1
 --track@start_z:開始Z座標,-1024,100000,-512,1
 --track@end_z:終了Z座標,-1024,100000,-1024,1
 --track@fineness:細かさ,0,100,100,1
@@ -53,13 +54,16 @@ float4 dithering_z(float4 pos : SV_Position) : SV_TARGET
 {
     uint2 pixelCoord = uint2(pos.xy*fineness*0.01) % 4;
     float threshold = BayerMatrix[pixelCoord.y][pixelCoord.x];
-    float fade_percentage = (obj_z - start_z) / (end_z - start_z);
+    float fade = (obj_z - start_z) / (end_z - start_z);
     // ディザリング判定
-    return (fade_percentage > threshold) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
+    return (fade > threshold) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
 }
 
 ]]
 
+if is_offscrean == 1 then
+    obj.effect("オフスクリーン描画")
+end
 obj.pixelshader("dithering_z", "object", {"object"}, {start_z, end_z, obj.z, fineness}, "copy")
 
 @dithering_camera
