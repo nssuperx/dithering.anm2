@@ -40,7 +40,7 @@ func main() {
 		panic(err)
 	}
 
-	camera_tmpl, err := template.ParseFiles("dithering_camera_tmpl.lua")
+	cameraTmpl, err := template.ParseFiles("dithering_camera_tmpl.lua")
 	if err != nil {
 		panic(err)
 	}
@@ -49,9 +49,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer anm2.Close()
+	defer cameraAnm2.Close()
 
-	err = camera_tmpl.Execute(cameraAnm2, map[string]string{
+	err = cameraTmpl.Execute(cameraAnm2, map[string]string{
 		"DitheringCamera": string(ditheringCameraHlslBytes),
 	})
 	if err != nil {
