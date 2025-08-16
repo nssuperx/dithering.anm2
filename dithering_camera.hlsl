@@ -1,7 +1,7 @@
 Texture2D src : register(t0);
 cbuffer constant0 : register(b0) {
-    float start_z;
-    float end_z;
+    float start_dist;
+    float end_dist;
     float obj_x;
     float obj_y;
     float obj_z;
@@ -20,10 +20,13 @@ static const float4x4 BayerMatrix = {
 
 float4 dithering_camera(float4 pos : SV_Position) : SV_TARGET
 {
-    float3 camPos = float3(cam_x, cam_y, cam_z);
     float3 objPos = float3(obj_x, obj_y, obj_z);
+    float3 camPos = float3(cam_x, cam_y, cam_z);
     uint2 pixelCoord = uint2(pos.xy*fineness*0.01) % 4;
     float threshold = BayerMatrix[pixelCoord.y][pixelCoord.x];
-    float fade = distance(camPos, objPos) / (end_z - start_z);
-    return (fade > threshold) ? float4(0.0, 0.0, 0.0, 0.0) : src[uint2(floor(pos.xy))];
+    float pos_dist = distance(objPos, camPos);
+    float fade = pos_dist / abs(start_dist - end_dist);
+    // start_dist >= end_dist なら近づいたら透明になり、そうでないなら離れたら透明になる
+    bool show = start_dist >= end_dist ? (fade > threshold && pos_dist > end_dist) : (pos_dist < start_dist || fade <= threshold && pos_dist < end_dist);
+    return show ? src[uint2(floor(pos.xy))] : float4(0.0, 0.0, 0.0, 0.0);
 }
